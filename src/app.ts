@@ -12,7 +12,7 @@ import path from "path";
 // @ts-ignore
 import xss from "xss-clean";
 import AppError from "./utils/appError";
-import appRouter from "./routes";
+import indexRouter from "./routes";
 
 const app = express();
 
@@ -67,7 +67,7 @@ app.use(
 export default app;
 
 // routing
-app.use("/", appRouter);
+app.use("/", indexRouter);
 
 app.all("*", (req, _res, next) => {
   next(new AppError(`Could not find ${req.originalUrl}`, 404));

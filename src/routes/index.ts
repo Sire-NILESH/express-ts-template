@@ -1,9 +1,10 @@
 import express from "express";
+import userRouter from "./userRouter";
 
-const appRouter = express.Router();
+const indexRouter = express.Router();
 
 // Mount the routes
-// appRouter.route("/api/v1/users", userRouter)
-// appRouter.route("/api/v1/products", producterRouter)
+// indexRouter.use("/api/v1/products", producterRouter)
+indexRouter.use("/api/v1/users", userRouter);
 
-export default appRouter;
+export default indexRouter;
