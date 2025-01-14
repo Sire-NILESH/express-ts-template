@@ -1,18 +1,16 @@
 import mongoose, { Document, Model, Query } from "mongoose";
-import bcrypt from "bcrypt";
 import isEmail from "validator/lib/isEmail";
 
 export interface IUser {
   fullname: string;
   email: string;
   password: string;
-  passwordConfirm: string | undefined;
   //   contact: number;
   //   address: string;
   //   city: string;
   //   country: string;
   photo: string;
-  role: "user" | "guide" | "lead-guide" | "admin";
+  role: "user" | "admin";
   active: boolean;
   lastLogin?: Date;
   isVerified?: boolean;
@@ -24,6 +22,8 @@ export interface IUser {
 }
 
 export interface IUserDocument extends IUser, Document {
+  _id: mongoose.Schema.Types.ObjectId; // Explicitly define _id
+  id: string; // Mongoose's virtual `id` field
   createdAt: Date;
   updatedAt: Date;
 }
@@ -56,17 +56,6 @@ const userSchema = new mongoose.Schema<IUserDocument>({
     enum: ["user", "guide", "lead-guide", "admin"],
     default: "user",
   },
-  passwordConfirm: {
-    type: String,
-    required: [true, "Please confirm your password"],
-    validate: {
-      // This only works on CREATE and SAVE!!!
-      validator: function (el: IUser["passwordConfirm"]) {
-        return el === this.password;
-      },
-      message: "Password and Confirm password are not the same",
-    },
-  },
   lastLogin: {
     type: Date,
     default: Date.now,
@@ -93,10 +82,10 @@ userSchema.pre<IUserDocument>("save", async function (next) {
   if (!this.isModified("password")) return next();
 
   // Hash the password with cost of 12
-  this.password = await bcrypt.hash(this.password, 12);
+  // this.password = await bcrypt.hash(this.password, 12);
 
-  // Delete passwordConfirm field
-  this.passwordConfirm = undefined;
+  // update the password changed at
+  this.passwordChangedAt = new Date(Date.now() - 1000);
   next();
 });
 
