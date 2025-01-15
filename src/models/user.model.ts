@@ -1,6 +1,5 @@
 import mongoose, { Document, Model, Query } from "mongoose";
 import isEmail from "validator/lib/isEmail";
-
 export interface IUser {
   fullname: string;
   email: string;

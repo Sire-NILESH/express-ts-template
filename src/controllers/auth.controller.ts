@@ -1,11 +1,12 @@
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import jwt from "jsonwebtoken";
 import { IUserDocument, User } from "../models/user.model";
 import AppError from "../utils/appError";
 import catchAsync from "../utils/catchAsync";
+import { IUser } from "./../models/user.model";
 
 const signToken = (id: string) => {
   return jwt.sign({ id }, process.env.JWT_SECRET!, {
@@ -89,6 +90,10 @@ export const changedPasswordAfter = function (
   return false;
 };
 
+/**
+ * @description - Register new User
+ * @route - POST /api/v1/users/signup
+ */
 export const signup = catchAsync(async (req, res, next) => {
   // Server-side check is password and password confirm matches
   if (req.body.password !== req.body.passwordConfirm) {
@@ -114,6 +119,10 @@ export const signup = catchAsync(async (req, res, next) => {
   createSendTokenResponse(newUser, StatusCodes.CREATED, req, res);
 });
 
+/**
+ * @description - Signin a User
+ * @route - POST /api/v1/users/signin
+ */
 export const signin = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -141,6 +150,12 @@ export const signin = catchAsync(async (req, res, next) => {
   createSendTokenResponse(user, StatusCodes.OK, req, res);
 });
 
+// Log out user by passing dummy token instead and expires in 10 seconds
+/**
+ * Signout out user
+ * @description Signout user by passing dummy token payload that expires in 10 seconds
+ * @route - GET /api/v1/users/signout
+ */
 export const signout = (_req: Request, res: Response) => {
   res.cookie("jwt", "signed-out", {
     expires: new Date(Date.now() + 10 * 1000),
@@ -176,9 +191,9 @@ export const forgotPassword = catchAsync(async (req, res, next) => {
   await user.save();
 
   // 3) Send it to user's email
-  const resetURL = `${req.protocol}://${req.get(
-    "host"
-  )}/api/v1/users/resetPassword/${resetToken}`; // e.g. http://127.0.0.1:8080/api/v1/users/resetPassword/3454543...
+  // const resetURL = `${req.protocol}://${req.get(
+  //   "host"
+  // )}/api/v1/users/resetPassword/${resetToken}`; // e.g. http://127.0.0.1:8080/api/v1/users/resetPassword/3454543...
 
   try {
     // Send password reset email to requested user
@@ -188,6 +203,7 @@ export const forgotPassword = catchAsync(async (req, res, next) => {
       message: "Token sent to email!",
     });
   } catch (error) {
+    // disable eslint@typescript-eslint/no-unused-vars
     user.resetPasswordToken = undefined;
     user.resetPasswordTokenExpiresAt = undefined;
     await user.save({ validateBeforeSave: false });
@@ -247,7 +263,7 @@ export const resetPassword = catchAsync(async (req, res, next) => {
  * Middleware function to check if the user is authenticated
  * @description - Only login user can access further routes
  */
-export const protect = catchAsync(async (req, res, next) => {
+export const protect = catchAsync(async (req, _res, next) => {
   // 1) Getting token, and check if it's there
   let token;
   if (
@@ -294,6 +310,25 @@ export const protect = catchAsync(async (req, res, next) => {
   }
 
   // GRANT ACCESS TO PROTECTED ROUTE
-  res.locals.user = currentUser;
+  req.user = currentUser;
   next();
 });
+
+/**
+ * Middleware function to check user's role and perform Authorization
+ * @description - Restricts further actions to specfied roles only
+ */
+export const restrictTo = (...roles: IUser["role"][]) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
+    if (req.user && !roles.includes(req.user.role)) {
+      return next(
+        new AppError(
+          "You don't have permission to perform this action.",
+          StatusCodes.FORBIDDEN
+        )
+      );
+    }
+
+    next();
+  };
+};
