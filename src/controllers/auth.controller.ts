@@ -202,8 +202,8 @@ export const forgotPassword = catchAsync(async (req, res, next) => {
       status: "success",
       message: "Token sent to email!",
     });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
-    // disable eslint@typescript-eslint/no-unused-vars
     user.resetPasswordToken = undefined;
     user.resetPasswordTokenExpiresAt = undefined;
     await user.save({ validateBeforeSave: false });

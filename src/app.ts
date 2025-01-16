@@ -52,7 +52,7 @@ app.use(cookieParser());
 
 // Secure static file serving
 app.use(
-  express.static(path.join(__dirname, "public"), {
+  express.static(path.join(__dirname, "src/public"), {
     dotfiles: "ignore", // Prevent serving hidden files like .env, .git, etc.
     index: false, // Disable serving default index.html for directories.
     redirect: false, // Disable automatic redirects (e.g., /folder -> /folder/).
