@@ -1,6 +1,8 @@
 import dotenv from "dotenv";
-import app from "./src/app";
+import app from "./app";
 import { mongoConnect } from "./db/mongoConnect";
+import { Server } from "http";
+import path from "path";
 
 // global uncaught exception handler
 process.on("uncaughtException", function (err) {
@@ -11,26 +13,35 @@ process.on("uncaughtException", function (err) {
 });
 
 // Load env variables
-dotenv.config({ path: "./.env" });
+dotenv.config({ path: path.join(__dirname, "../.env") });
 
-// Connect to the DB
-mongoConnect().then(() => console.log("DB setup completed..."));
+let server: Server | undefined;
 
-// Server configuration
-const PORT = process.env.PORT || 3000;
+(async function () {
+  // Connect to the DB
+  await mongoConnect();
 
-const server = app.listen(PORT, async () => {
-  console.log(`Server listening on ${PORT}...`);
-});
+  // Server configuration
+  const PORT = process.env.PORT || 3000;
+
+  server = app.listen(PORT, async () => {
+    console.log(`Server listening on ${PORT}...`);
+  });
+})();
 
 // global uncaught promise rejection handler
 process.on("unhandledRejection", function (err) {
   console.error(
     "Unhandled promise rejection detected, shutting down the server 🖥..."
   );
+
   console.error(err);
 
-  server.close(() => {
+  if (server) {
+    server.close(() => {
+      process.exit(1);
+    });
+  } else {
     process.exit(1);
-  });
+  }
 });

@@ -108,7 +108,7 @@ export const signup = catchAsync(async (req, res, next) => {
   const hashedPassword = await generateHashedPassword(req.body.password);
 
   const newUser = await User.create({
-    name: req.body.name,
+    fullname: req.body.fullname,
     email: req.body.email,
     password: hashedPassword,
   });
@@ -332,3 +332,15 @@ export const restrictTo = (...roles: IUser["role"][]) => {
     next();
   };
 };
+
+const authController = {
+  signin,
+  signup,
+  signout,
+  forgotPassword,
+  resetPassword,
+  protect,
+  restrictTo,
+};
+
+export default authController;

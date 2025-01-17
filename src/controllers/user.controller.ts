@@ -63,7 +63,7 @@ export const updateMe = catchAsync(
  * @description - Delete current user
  * @route - DELETE /api/v1/users/deleteMe
  */
-exports.deleteMe = catchAsync(async (req, res, next) => {
+export const deleteMe = catchAsync(async (req, res, next) => {
   // authenticated users have a 'user' object put on the req object by the 'protect' middleware.
   if (!req.user) {
     return next(
@@ -86,7 +86,7 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
  * @description - Create New User
  * @route - POST /api/v1/users
  */
-exports.createUser = (_req: Request, res: Response) => {
+export const createUser = (_req: Request, res: Response) => {
   res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
     status: "error",
     message: 'This route is not defined! Please use "/signup" instead.',
@@ -97,22 +97,35 @@ exports.createUser = (_req: Request, res: Response) => {
  * @description - Get All Users
  * @route - GET /api/v1/users
  */
-exports.getAllUsers = factory.getAll(User);
+export const getAllUsers = factory.getAll(User);
 
 /**
  * @description - Get User (Single)
  * @route - GET /api/v1/users/:id
  */
-exports.getUser = factory.getOne(User);
+export const getUser = factory.getOne(User);
 
 /**
  * @description - Update User
  * @route - PATCH /api/v1/users/:id
  */
-exports.updateUser = factory.updateOne(User);
+export const updateUser = factory.updateOne(User);
 
 /**
  * @description - Delete User
  * @route - DELETE /api/v1/users/:id
  */
-exports.deleteUser = factory.deleteOne(User);
+export const deleteUser = factory.deleteOne(User);
+
+const userController = {
+  getMe,
+  updateMe,
+  deleteMe,
+  createUser,
+  getAllUsers,
+  getUser,
+  updateUser,
+  deleteUser,
+};
+
+export default userController;
