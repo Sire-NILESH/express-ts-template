@@ -35,7 +35,9 @@ export const createSendTokenResponse = (
   res.cookie("jwt", token, cookieOptions);
 
   // Remove password from output
-  const resUser = { ...user, password: undefined };
+  const resUser = user.toObject();
+
+  resUser.password = undefined;
 
   res.status(statusCode).json({
     status: "success",
@@ -198,7 +200,7 @@ export const forgotPassword = catchAsync(async (req, res, next) => {
   try {
     // Send password reset email to requested user
 
-    res.status(200).json({
+    res.status(StatusCodes.OK).json({
       status: "success",
       message: "Token sent to email!",
     });
@@ -298,7 +300,6 @@ export const protect = catchAsync(async (req, _res, next) => {
 
   /**
    * 4) Check if user changed password after the token was issued
-   * "changedPasswordAfter" is document instance methods from "userModel.js" which returns boolean
    */
   if (changedPasswordAfter(currentUser, decoded.iat as number)) {
     return next(
